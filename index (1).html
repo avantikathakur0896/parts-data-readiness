@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Parts Data Readiness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: case file. Hypothetical banner, visual pitch flow, then five tabs in the order the PM work happens. Black, white, and one red. */
+:root {
+  --bg: #f4f4f4;
+  --panel: #ffffff;
+  --sunken: #ececec;
+  --fg: #171a20;
+  --muted: #5c5e62;
+  --line: #d9d9d9;
+  --red: #e31937;
+  --red-soft: #fde7ea;
+  --ink: #171a20;
+  --ink-fg: #ffffff;
+  --g1: #8e8e8e; --g2: #b3b3b3; --g3: #cfcfcf; --g4: #e2e2e2;
+  --ok: #1e7a46; --ok-soft: #e1f2e7;
+  --warn: #9a6200; --warn-soft: #fbefd6;
+  --font-display: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b0c0e; --panel: #15171b; --sunken: #1e2126; --fg: #eeeeee; --muted: #9a9ca1; --line: #2b2e34;
+    --red: #ff3b52; --red-soft: #3a1419; --ink: #eeeeee; --ink-fg: #0b0c0e;
+    --g1: #8a8d93; --g2: #62656b; --g3: #44474d; --g4: #33363b;
+    --ok: #5cc48c; --ok-soft: #153124; --warn: #e3ad4a; --warn-soft: #372a10;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b0c0e; --panel: #15171b; --sunken: #1e2126; --fg: #eeeeee; --muted: #9a9ca1; --line: #2b2e34;
+  --red: #ff3b52; --red-soft: #3a1419; --ink: #eeeeee; --ink-fg: #0b0c0e;
+  --g1: #8a8d93; --g2: #62656b; --g3: #44474d; --g4: #33363b;
+  --ok: #5cc48c; --ok-soft: #153124; --warn: #e3ad4a; --warn-soft: #372a10;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 16px; padding-block: 18px 40px; display: grid; gap: 18px; }
+h1, h2, h3 { font-family: var(--font-display); margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; line-height: 1.05; }
+h2 { font-size: 1.05rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+h3 { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+p { margin: 0; }
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.small { font-size: 0.84rem; }
+
+/* Hypothetical banner */
+.banner { display: flex; gap: 14px; align-items: center; border: 2px solid var(--red); border-radius: 6px; padding: 12px 16px; background: var(--red-soft); }
+.banner .tag { font-family: var(--font-display); font-weight: 700; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; background: var(--red); color: #ffffff; padding: 4px 8px; border-radius: 3px; white-space: nowrap; }
+.banner p { font-size: 0.95rem; }
+@media (max-width: 560px) { .banner { flex-direction: column; align-items: flex-start; } }
+
+.hero { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 10px; }
+.hero .sub { color: var(--muted); max-width: 60ch; }
+.byline { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); }
+
+/* Pitch flow */
+.flow { display: grid; grid-template-columns: repeat(9, auto); align-items: stretch; gap: 0; }
+.flow .node { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.flow .node .k { font-family: var(--font-display); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--red); }
+.flow .node .v { font-size: 0.88rem; line-height: 1.35; }
+.flow .node .stat { font-family: var(--font-display); font-weight: 600; font-size: 1.5rem; line-height: 1; }
+.flow .arrow { display: grid; place-items: center; color: var(--red); font-size: 1.2rem; padding: 0 6px; }
+@media (min-width: 901px) { .flow { grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr auto 1fr; } }
+@media (max-width: 900px) { .flow { grid-template-columns: minmax(0, 1fr); } .flow .arrow { transform: rotate(90deg); padding: 2px 0; } }
+
+nav.tabs { display: flex; gap: 2px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+nav.tabs button { font: 600 0.78rem var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; background: none; border: 0; border-bottom: 3px solid transparent; color: var(--muted); padding: 10px 12px; cursor: pointer; margin-bottom: -1px; }
+nav.tabs button .n { color: var(--red); margin-right: 6px; }
+nav.tabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--red); }
+nav.tabs button:hover { color: var(--fg); }
+button:focus-visible, input:focus-visible, label.check:focus-within { outline: 2px solid var(--red); outline-offset: 2px; }
+
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: grid; gap: 20px; min-width: 0; }
+.grid-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 900px) { .grid-2, .grid-3 { grid-template-columns: minmax(0, 1fr); } .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.stack { display: grid; gap: 12px; min-width: 0; }
+
+/* Break-point diagram */
+.breaks { display: grid; grid-template-columns: 1fr auto 2fr auto 1fr; gap: 10px; align-items: center; }
+.src, .sink { border-radius: 6px; padding: 14px; text-align: center; font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.src { background: var(--red); color: #ffffff; }
+.sink { background: var(--ink); color: var(--ink-fg); }
+.mid { display: grid; gap: 8px; }
+.bp { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: center; border: 1px solid var(--line); border-left: 3px solid var(--red); border-radius: 4px; padding: 8px 10px; }
+.bp .who { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.bp .what { font-weight: 600; }
+.bp .icon { width: 28px; height: 28px; border-radius: 50%; background: var(--red-soft); color: var(--red); display: grid; place-items: center; font-weight: 700; font-family: var(--font-display); font-size: 0.8rem; }
+.breaks .arr { color: var(--red); font-size: 1.3rem; }
+@media (max-width: 760px) { .breaks { grid-template-columns: minmax(0, 1fr); } .breaks .arr { transform: rotate(90deg); justify-self: center; } }
+
+/* Donut */
+.donut-wrap { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 16px; align-items: center; }
+@media (max-width: 480px) { .donut-wrap { grid-template-columns: minmax(0, 1fr); justify-items: center; } }
+svg text { font-family: var(--font-mono); }
+.legend { display: grid; gap: 6px; font-size: 0.86rem; }
+.legend .li { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.legend .sw { width: 12px; height: 12px; border-radius: 2px; }
+
+.bars { display: grid; gap: 7px; }
+.bar-row { display: grid; grid-template-columns: 140px minmax(0, 1fr) 34px; gap: 10px; align-items: center; font-size: 0.86rem; }
+.bar-track { background: var(--sunken); border-radius: 2px; height: 12px; overflow: hidden; }
+.bar-fill { background: var(--g1); height: 100%; }
+.bar-fill.hl { background: var(--red); }
+
+/* Cost */
+.cost-total { font-family: var(--font-display); font-weight: 600; font-size: clamp(2rem, 5vw, 2.8rem); line-height: 1; }
+.stackbar { display: flex; height: 26px; border-radius: 4px; overflow: hidden; }
+.stackbar div { height: 100%; transition: width 0.2s; }
+.ctrl { display: grid; gap: 0; }
+.ctrl .row { display: flex; justify-content: space-between; gap: 8px; font-size: 0.86rem; }
+input[type="range"] { width: 100%; accent-color: var(--red); }
+
+/* Prioritize */
+.chart-wrap { overflow-x: auto; }
+svg.chart { width: 100%; min-width: 480px; height: auto; display: block; }
+svg.chart text { fill: var(--muted); font-size: 10px; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+th { text-align: left; font: 600 0.66rem var(--font-display); text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+td.r, th.r { text-align: right; }
+tr.cut td { border-bottom: 2px dashed var(--red); }
+tr.out td:first-child { color: var(--muted); }
+input.cell { width: 62px; font: 0.84rem var(--font-mono); padding: 3px 5px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); color: var(--fg); text-align: right; }
+.pill { display: inline-block; font: 600 0.66rem var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; white-space: nowrap; }
+.pill.now { background: var(--red); color: #ffffff; }
+.pill.next { background: var(--ink); color: var(--ink-fg); }
+.pill.later { background: var(--sunken); color: var(--muted); }
+.note { border-left: 3px solid var(--red); padding: 6px 12px; font-size: 0.9rem; }
+
+/* Requirements */
+.req-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.req { border: 1px solid var(--line); border-top: 3px solid var(--red); border-radius: 6px; padding: 12px; display: grid; gap: 10px; align-content: start; }
+.req .id { font-family: var(--font-mono); font-size: 0.75rem; color: var(--red); }
+.req .t { font-family: var(--font-display); font-weight: 600; font-size: 0.95rem; }
+.chip { display: inline-block; font-size: 0.74rem; border: 1px solid var(--line); border-radius: 12px; padding: 1px 9px; color: var(--muted); }
+.ac { display: grid; gap: 6px; font-size: 0.86rem; }
+.ac div { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 6px; }
+.ac div::before { content: "✓"; color: var(--ok); font-weight: 700; }
+.moves { font-size: 0.8rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; }
+.moves strong { color: var(--fg); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.risk { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; display: grid; gap: 4px; }
+.risk .h { font-weight: 600; }
+
+/* Journey simulator */
+.journey { display: grid; gap: 14px; border: 1px solid var(--line); border-radius: 8px; padding: 14px; background: var(--bg); }
+.j-controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: end; }
+.j-step { display: grid; gap: 6px; min-width: 0; }
+.j-label { font: 600 0.66rem var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button { font: 500 0.86rem var(--font-body); border: 1px solid var(--line); background: var(--panel); color: var(--fg); padding: 6px 10px; border-radius: 18px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--ink-fg); border-color: var(--ink); }
+.switch { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); border-radius: 18px; padding: 4px 12px 4px 4px; cursor: pointer; font: 600 0.86rem var(--font-body); }
+.switch .knob { width: 34px; height: 20px; border-radius: 10px; background: var(--g3); position: relative; transition: background 0.2s; }
+.switch .knob::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #ffffff; transition: left 0.2s; }
+.switch[aria-pressed="true"] .knob { background: var(--ok); }
+.switch[aria-pressed="true"] .knob::after { left: 16px; }
+.btn-go { font: 700 0.8rem var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; background: var(--red); color: #ffffff; border: 0; border-radius: 4px; padding: 10px 18px; cursor: pointer; }
+.btn-go:disabled { opacity: 0.6; cursor: default; }
+.track { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; position: relative; }
+.station { display: grid; justify-items: center; gap: 6px; text-align: center; font-size: 0.8rem; position: relative; padding-top: 2px; }
+.station .dot { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--g2); background: var(--panel); display: grid; place-items: center; font: 700 0.8rem var(--font-display); color: var(--muted); transition: all 0.2s; z-index: 1; }
+.station::before { content: ""; position: absolute; top: 19px; left: -50%; width: 100%; height: 2px; background: var(--g3); }
+.station:first-child::before { display: none; }
+.station.off { opacity: 0.35; }
+.station.pass .dot { border-color: var(--ok); background: var(--ok); color: #ffffff; }
+.station.here .dot { border-color: var(--ink); background: var(--ink); color: var(--ink-fg); transform: scale(1.15); }
+.station.stop .dot { border-color: var(--red); background: var(--red); color: #ffffff; transform: scale(1.2); }
+.station.caught .dot { border-color: var(--ok); background: var(--ok-soft); color: var(--ok); transform: scale(1.2); }
+@media (max-width: 560px) { .track { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 14px; } .station::before { display: none; } }
+.j-result { border-radius: 6px; padding: 12px 14px; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px 22px; align-items: center; background: var(--panel); border: 1px solid var(--line); min-height: 64px; }
+.j-result.bad { border-color: var(--red); background: var(--red-soft); }
+.j-result.good { border-color: var(--ok); background: var(--ok-soft); }
+.j-result .big { font-family: var(--font-display); font-weight: 700; font-size: 1.4rem; line-height: 1; text-align: right; }
+.j-result .cap { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); text-align: right; }
+@media (max-width: 560px) { .j-result { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .j-result > :first-child { grid-column: 1 / -1; } }
+.j-tally { font-size: 0.82rem; color: var(--muted); }
+.j-tally strong { color: var(--fg); }
+
+/* Clickable details */
+.fdetail { border: 1px solid var(--line); border-left: 3px solid var(--red); border-radius: 6px; padding: 12px 14px; display: grid; gap: 6px; }
+.fdetail:empty { display: none; }
+.fdetail .t { font-family: var(--font-display); font-weight: 600; }
+.fdetail .math { font-family: var(--font-mono); font-size: 0.82rem; background: var(--sunken); padding: 6px 8px; border-radius: 4px; overflow-x: auto; }
+.fcard, .rank-row, .g-row { cursor: pointer; }
+.fcard:hover, .rank-row:hover .nm, .g-row:hover span:first-child { color: var(--red); }
+.fcard.sel { outline: 2px solid var(--red); }
+.rank-row.sel .nm, .g-row.sel span:first-child { color: var(--red); }
+.legend button.li { all: unset; display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: 8px; align-items: center; cursor: pointer; border-radius: 3px; padding: 2px 4px; }
+.legend button.li:hover, .legend button.li.sel { background: var(--sunken); }
+.legend button.li:focus-visible { outline: 2px solid var(--red); }
+.cause-note { font-size: 0.86rem; border-left: 3px solid var(--red); padding: 4px 10px; }
+
+/* Try-it */
+.tryit form .field { display: grid; gap: 3px; }
+.tryit label { font-size: 0.84rem; font-weight: 600; }
+.tryit label.inline { display: flex; gap: 8px; align-items: center; font-weight: 400; }
+.tryit input[type="text"], .tryit input[type="number"], .tryit select { font: 0.92rem var(--font-body); padding: 7px 9px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); color: var(--fg); width: 100%; }
+.tryit input[type="checkbox"] { accent-color: var(--red); }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-ghost { font: 600 0.84rem var(--font-body); background: var(--panel); color: var(--fg); border: 1px solid var(--ink); border-radius: 4px; padding: 7px 12px; cursor: pointer; }
+.btn-ghost:hover { background: var(--sunken); }
+.verdict { border-radius: 8px; padding: 16px; display: flex; gap: 14px; align-items: center; }
+.verdict.ok { background: var(--ok-soft); }
+.verdict.stop { background: var(--red-soft); }
+.verdict.urgent { background: var(--warn-soft); }
+.verdict .vt { font-family: var(--font-display); font-weight: 700; font-size: 1.3rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.verdict.ok .vt { color: var(--ok); } .verdict.stop .vt { color: var(--red); } .verdict.urgent .vt { color: var(--warn); }
+.rules { display: grid; gap: 6px; }
+.rule { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 8px; font-size: 0.9rem; align-items: start; }
+.rule .mk { font-weight: 700; }
+.rule.ok .mk { color: var(--ok); } .rule.bad .mk { color: var(--red); }
+.rule .why { font-size: 0.8rem; color: var(--muted); }
+.ctrl.dark .row { color: var(--ink-fg); }
+.w-status { font: 600 0.72rem var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; align-self: center; }
+
+/* Priority matrix */
+.matrix { display: grid; grid-template-columns: 26px minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto minmax(120px, auto) minmax(120px, auto); gap: 8px; }
+.matrix .axis-x { font: 600 0.66rem var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-align: center; }
+.matrix .axis-y { writing-mode: vertical-rl; transform: rotate(180deg); font: 600 0.66rem var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-align: center; }
+.quad { border-radius: 6px; padding: 10px; display: grid; gap: 6px; align-content: start; background: var(--sunken); min-width: 0; }
+.quad.win { background: var(--red-soft); outline: 2px solid var(--red); }
+.quad .qh { font: 700 0.72rem var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; }
+.quad.win .qh { color: var(--red); }
+.quad .qs { font-size: 0.78rem; color: var(--muted); margin-top: -4px; }
+.fcard { background: var(--panel); border-radius: 4px; padding: 6px 8px; font-size: 0.86rem; display: flex; justify-content: space-between; gap: 6px; align-items: center; border-left: 3px solid var(--g2); }
+.fcard.now { border-left-color: var(--red); }
+.fcard.next { border-left-color: var(--ink); }
+.rank { display: grid; gap: 8px; }
+.rank-row { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.rank-row .pos { font-family: var(--font-display); font-weight: 700; color: var(--muted); }
+.rank-row .nm { font-weight: 600; font-size: 0.9rem; }
+.rank-row .sb { height: 8px; background: var(--sunken); border-radius: 2px; overflow: hidden; margin-top: 4px; }
+.rank-row .sb div { height: 100%; background: var(--g1); }
+.rank-row.now .sb div { background: var(--red); }
+.cutline { display: flex; align-items: center; gap: 8px; color: var(--red); font: 600 0.66rem var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; }
+.cutline::before, .cutline::after { content: ""; flex: 1; border-top: 2px dashed var(--red); }
+details.adjust summary { cursor: pointer; font-weight: 600; color: var(--red); }
+details.adjust[open] summary { margin-bottom: 10px; }
+
+/* Roadmap */
+.lanes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.lane { border-radius: 6px; padding: 10px; display: grid; gap: 8px; align-content: start; background: var(--sunken); }
+.lane .lh { display: flex; justify-content: space-between; align-items: center; }
+.lane .card { background: var(--panel); border-radius: 4px; padding: 8px 10px; font-size: 0.88rem; display: flex; justify-content: space-between; gap: 8px; }
+.lane.now .card { border-left: 3px solid var(--red); }
+.lane.next .card { border-left: 3px solid var(--ink); }
+.lane.later .card { border-left: 3px solid var(--g2); }
+@media (max-width: 760px) { .lanes { grid-template-columns: minmax(0, 1fr); } }
+.gantt { display: grid; gap: 6px; }
+.g-row { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 10px; align-items: center; font-size: 0.86rem; }
+.g-track { position: relative; height: 20px; background: var(--sunken); border-radius: 3px; }
+.g-bar { position: absolute; top: 3px; height: 14px; border-radius: 3px; background: var(--ink); }
+.g-bar.red { background: var(--red); }
+.g-bar.gate { background: var(--red); width: 14px !important; height: 14px; transform: rotate(45deg) scale(0.75); border-radius: 2px; }
+.g-axis { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 10px; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); }
+.g-axis .ticks { display: flex; justify-content: space-between; }
+@media (max-width: 520px) { .g-row, .g-axis { grid-template-columns: 100px minmax(0, 1fr); } }
+
+/* Measure */
+.north { background: var(--ink); color: var(--ink-fg); border-radius: 8px; padding: 16px; display: grid; gap: 10px; }
+.north .lbl { font: 600 0.68rem var(--font-display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--red); }
+.north .ba { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; font-family: var(--font-display); }
+.north .from { font-size: 2.2rem; font-weight: 600; opacity: 0.55; text-decoration: line-through; text-decoration-thickness: 2px; }
+.north .to { font-size: 3rem; font-weight: 700; color: var(--red); line-height: 1; }
+.tile { border: 1px solid var(--line); border-radius: 6px; padding: 12px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.tile .k { font: 600 0.62rem var(--font-display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.tile .name { font-weight: 600; font-size: 0.9rem; line-height: 1.3; }
+.mini { display: grid; gap: 4px; }
+.mini .mr { display: grid; grid-template-columns: 44px minmax(0, 1fr) 54px; gap: 6px; align-items: center; font-size: 0.75rem; color: var(--muted); }
+.mini .mt { height: 8px; background: var(--sunken); border-radius: 2px; overflow: hidden; }
+.mini .mf { height: 100%; }
+.tile.guard { border-color: var(--warn); }
+.checklist { display: grid; gap: 6px; }
+.check { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
+.check input { accent-color: var(--red); width: 16px; height: 16px; }
+.check.done span { color: var(--muted); text-decoration: line-through; }
+.ring-row { display: flex; gap: 14px; align-items: center; }
+
+footer { font-size: 0.8rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 12px; display: flex; flex-wrap: wrap; gap: 6px 20px; justify-content: space-between; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <div class="banner" role="note">
+    <span class="tag">Hypothetical case</span>
+    <p><strong>Hypothetical scenario, hypothetical data.</strong> If I were the Supply Chain Systems Product Manager, this is how I would take one problem from discovery to launch.</p>
+  </div>
+
+  <header class="hero">
+    <div class="stack" style="gap:6px">
+      <h1>Parts Data Readiness</h1>
+      <p class="sub">Catch bad part data before it stops a shipment, a dock, or a line.</p>
+    </div>
+    <span class="byline">Avantika Thakur · product case study</span>
+  </header>
+
+  <section class="flow" aria-label="The case in five steps">
+    <div class="node"><span class="k">Problem</span><span class="v">Bad item data breaks planning, freight, and receiving</span></div>
+    <span class="arrow" aria-hidden="true">→</span>
+    <div class="node"><span class="k">Evidence</span><span class="stat" id="flow-share">38%</span><span class="v">of delivery problems come from bad data</span></div>
+    <span class="arrow" aria-hidden="true">→</span>
+    <div class="node"><span class="k">Solution</span><span class="v">Check every part's data before ordering or shipping</span></div>
+    <span class="arrow" aria-hidden="true">→</span>
+    <div class="node"><span class="k">Priority</span><span class="stat" id="flow-mvp">4</span><span class="v">features in release 1</span></div>
+    <span class="arrow" aria-hidden="true">→</span>
+    <div class="node"><span class="k">Success</span><span class="stat">9.5 → 4.0</span><span class="v">problem deliveries per 1,000</span></div>
+  </section>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-panel="problem"><span class="n">01</span>The problem</button>
+    <button role="tab" aria-selected="false" data-panel="prioritize"><span class="n">02</span>What first</button>
+    <button role="tab" aria-selected="false" data-panel="define"><span class="n">03</span>What it does</button>
+    <button role="tab" aria-selected="false" data-panel="roadmap"><span class="n">04</span>The plan</button>
+    <button role="tab" aria-selected="false" data-panel="measure"><span class="n">05</span>Did it work</button>
+  </nav>
+
+  <!-- 01 PROBLEM -->
+  <section class="panel" id="panel-problem">
+    <h2>Follow one part through the supply chain</h2>
+    <div class="journey">
+      <div class="j-controls">
+        <div class="j-step">
+          <span class="j-label">1 · Pick a data mistake</span>
+          <div class="seg" id="j-mistake">
+            <button type="button" data-m="customs" aria-pressed="true">Missing customs code</button>
+            <button type="button" data-m="unit" aria-pressed="false">Box vs. piece mix-up</button>
+            <button type="button" data-m="version" aria-pressed="false">Old part version</button>
+            <button type="button" data-m="none" aria-pressed="false">No mistake</button>
+          </div>
+        </div>
+        <div class="j-step">
+          <span class="j-label">2 · Data check</span>
+          <button type="button" class="switch" id="j-check" aria-pressed="false"><span class="knob"></span><span class="sw-txt">Off</span></button>
+        </div>
+        <button type="button" class="btn-go" id="j-go">Send the part ▶</button>
+      </div>
+      <div class="track" id="j-track"></div>
+      <div class="j-result" id="j-result"></div>
+      <div class="j-tally" id="j-tally"></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="stack">
+        <h3>640 delivery problems · 12 weeks</h3>
+        <div class="donut-wrap">
+          <svg id="donut" viewBox="0 0 180 180" width="180" height="180" role="img" aria-label="Causes of delivery problems"></svg>
+          <div class="legend" id="legend"></div>
+        </div>
+        <div class="cause-note" id="cause-note"></div>
+        <h3>Which field was wrong</h3>
+        <div class="bars" id="field-bars"></div>
+      </div>
+      <div class="stack">
+        <h3>Annual cost</h3>
+        <div class="cost-total" id="cost-total"></div>
+        <div class="stackbar" id="cost-bar" aria-hidden="true"></div>
+        <div class="legend" id="cost-legend"></div>
+        <div class="ctrl"><div class="row"><label for="c-ex">Data problems per month</label><span class="num" id="cv-ex"></span></div><input type="range" id="c-ex" min="20" max="200" step="5" value="80"></div>
+        <div class="ctrl"><div class="row"><label for="c-hr">Hours to fix each</label><span class="num" id="cv-hr"></span></div><input type="range" id="c-hr" min="1" max="8" step="0.5" value="3"></div>
+        <div class="ctrl"><div class="row"><label for="c-hold">Customs holds / month</label><span class="num" id="cv-hold"></span></div><input type="range" id="c-hold" min="0" max="8" step="1" value="2"></div>
+        <div class="ctrl"><div class="row"><label for="c-ld">Hours the line stops per year</label><span class="num" id="cv-ld"></span></div><input type="range" id="c-ld" min="0" max="12" step="1" value="4"></div>
+        <p class="muted small">Assumes $65/h labor, $12K per customs hold, $50K per hour the line stops.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 PRIORITIZE -->
+  <section class="panel" id="panel-prioritize" hidden>
+    <div class="grid-2">
+      <div class="stack">
+        <h2>Big payoff, small effort first</h2>
+        <div class="matrix" id="matrix"></div>
+        <p class="small muted">Click any feature to see why it landed where it did.</p>
+        <div class="fdetail" id="fdetail"></div>
+      </div>
+      <div class="stack">
+        <h2>Ranked by score</h2>
+        <p class="small muted">Score = parts it helps × how much it helps × how sure we are ÷ weeks to build.</p>
+        <div class="ctrl"><div class="row"><label for="cap">Team time this quarter</label><span class="num" id="cap-v"></span></div><input type="range" id="cap" min="4" max="24" step="1" value="12"></div>
+        <div class="rank" id="rank"></div>
+        <div class="note" id="rice-note"></div>
+      </div>
+    </div>
+    <details class="adjust">
+      <summary>Adjust the scores</summary>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Feature</th><th class="r">Parts helped<br>per quarter</th><th class="r">How much it<br>helps (1–3)</th><th class="r">How sure<br>(0–1)</th><th class="r">Weeks to<br>build</th><th class="r">Score</th></tr></thead>
+          <tbody id="rice-body"></tbody>
+        </table>
+      </div>
+    </details>
+  </section>
+
+  <!-- 03 REQUIREMENTS -->
+  <section class="panel" id="panel-define" hidden>
+    <h2>Try the data check yourself</h2>
+    <div class="grid-2 tryit">
+      <form id="try-form" class="stack" autocomplete="off">
+        <div class="field"><label for="t-hs">Customs code</label><input id="t-hs" type="text" placeholder="e.g. 8708.99" value=""></div>
+        <div class="field"><label for="t-unit">Unit the supplier ships in</label>
+          <select id="t-unit"><option value="each">Each (matches our system)</option><option value="box">Box of 10</option></select></div>
+        <label class="inline" for="t-conv"><input id="t-conv" type="checkbox"> We know 1 box = 10 each</label>
+        <div class="field"><label for="t-wt">Weight (kg)</label><input id="t-wt" type="number" min="0" step="0.1" value="21.5"></div>
+        <div class="field"><label for="t-inco">Shipping terms</label>
+          <select id="t-inco"><option value="">Not set</option><option>FOB</option><option>DAP</option><option>FCA</option></select></div>
+        <div class="field"><label for="t-rev">Part version</label>
+          <select id="t-rev"><option value="C">Rev C · current</option><option value="B">Rev B · old</option></select></div>
+        <div class="btn-row"><button type="button" class="btn-ghost" id="t-good">Fill a good example</button><button type="button" class="btn-ghost" id="t-bad">Break it</button></div>
+      </form>
+      <div class="stack">
+        <div class="verdict" id="t-verdict"></div>
+        <div class="rules" id="t-rules"></div>
+        <button type="button" class="btn-ghost" id="t-override" hidden>Send anyway as urgent (reason logged)</button>
+      </div>
+    </div>
+    <h2>What release 1 must do</h2>
+    <div class="req-grid" id="prd"></div>
+    <div class="grid-2">
+      <div class="stack"><h3>Out of scope</h3><div class="chips" id="oos"></div></div>
+      <div class="stack"><h3>Risks &amp; safety checks</h3>
+        <div class="grid-3">
+          <div class="risk"><span class="h">SAP stays the main record</span><span class="small muted">The check reads SAP and never changes it.</span></div>
+          <div class="risk"><span class="h">Old supplier data</span><span class="small muted">Every auto-fill shows where it came from.</span></div>
+          <div class="risk"><span class="h">Don't slow the line</span><span class="small muted">Adds 4 hours at most. Urgent parts can skip.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 ROADMAP -->
+  <section class="panel" id="panel-roadmap" hidden>
+    <h2>Now · Next · Later</h2>
+    <div class="lanes">
+      <div class="lane now"><div class="lh"><h3>Now</h3><span class="pill now">This quarter</span></div><div id="lane-now" class="stack" style="gap:8px"></div></div>
+      <div class="lane next"><div class="lh"><h3>Next</h3><span class="pill next">Next quarter</span></div><div id="lane-next" class="stack" style="gap:8px"></div></div>
+      <div class="lane later"><div class="lh"><h3>Later</h3><span class="pill later">Needs proof</span></div><div id="lane-later" class="stack" style="gap:8px"></div></div>
+    </div>
+    <h2>Delivery plan · 14 weeks</h2>
+    <div class="gantt" id="gantt"></div>
+    <p class="muted small">◆ = go / no-go decision. Click any step to see what happens in it.</p>
+    <div class="fdetail" id="gdetail"></div>
+  </section>
+
+  <!-- 05 MEASURE -->
+  <section class="panel" id="panel-measure" hidden>
+    <div class="grid-2">
+      <div class="stack">
+        <div class="north">
+          <span class="lbl">Main goal · what if?</span>
+          <span>Deliveries with data problems, per 1,000</span>
+          <div class="ba"><span class="from">9.5</span><span class="to" id="w-proj">4.0</span><span class="w-status" id="w-status"></span></div>
+          <div class="ctrl dark"><div class="row"><label for="w-adopt">Planners using the check</label><span class="num" id="wv-adopt"></span></div><input type="range" id="w-adopt" min="0" max="100" step="5" value="85"></div>
+          <div class="ctrl dark"><div class="row"><label for="w-fix">Data gaps fixed within a day</label><span class="num" id="wv-fix"></span></div><input type="range" id="w-fix" min="0" max="100" step="5" value="90"></div>
+          <div class="small" id="w-save"></div>
+        </div>
+        <div class="grid-4" id="tiles" style="grid-template-columns: repeat(2, minmax(0, 1fr))"></div>
+      </div>
+      <div class="stack">
+        <h2>Pilot result (hypothetical)</h2>
+        <div class="chart-wrap"><svg class="chart" id="pilot" viewBox="0 0 500 240" role="img" aria-label="Problem deliveries per 1,000 by week"></svg></div>
+        <div class="ring-row">
+          <svg id="ring" viewBox="0 0 64 64" width="64" height="64" aria-hidden="true"></svg>
+          <div><h2>Launch readiness</h2><span class="muted small" id="launch-status"></span></div>
+        </div>
+        <div class="checklist" id="checklist"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Hypothetical scenario. All data is illustrative and computed in the browser.</span>
+    <span>Avantika Thakur</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const money = n => n >= 1e6 ? "$" + (n / 1e6).toFixed(2) + "M" : "$" + Math.round(n / 1000) + "K";
+
+  // ---------- 01 Problem ----------
+  const CAUSES = [["Bad part data", 243, "var(--red)"], ["Supplier sent wrong count", 141, "var(--g1)"], ["Truck or ship delay", 122, "var(--g2)"], ["System glitch", 77, "var(--g3)"], ["Other", 57, "var(--g4)"]];
+  const total = CAUSES.reduce((a, c) => a + c[1], 0);
+  const CAUSE_NOTES = [
+    "Missing customs codes, box vs. piece mix-ups, wrong weights, old part versions. All fixable before anything ships, which is why this product targets it.",
+    "The supplier's shipping notice doesn't match what arrives. Partly a supplier process issue; the problem tracker will show which suppliers repeat it.",
+    "Weather, port congestion, missed pickups. Real, but mostly outside our control.",
+    "Planning jobs that fail or duplicate orders. Owned by the systems team; tracked separately.",
+    "One-off issues with no repeat pattern.",
+  ];
+  let causeSel = 0;
+  function renderDonut() {
+    const r = 64, C = 2 * Math.PI * r; let off = 0, s = "";
+    CAUSES.forEach(([, n, col], i) => {
+      const len = n / total * C;
+      s += `<circle cx="90" cy="90" r="${r}" fill="none" stroke="${col}" stroke-width="${i === causeSel ? 30 : 24}" stroke-opacity="${i === causeSel ? 1 : 0.35}" stroke-dasharray="${len} ${C - len}" stroke-dashoffset="${-off}" transform="rotate(-90 90 90)"/>`;
+      off += len;
+    });
+    const [lab, n, col] = CAUSES[causeSel];
+    s += `<text x="90" y="88" text-anchor="middle" style="fill:${col === "var(--g4)" || col === "var(--g3)" ? "var(--fg)" : col}; font-family:Montserrat, sans-serif; font-weight:700; font-size:26px">${Math.round(n / total * 100)}%</text>`;
+    s += `<text x="90" y="106" text-anchor="middle" style="fill:var(--muted); font-size:9px">${n} of ${total}</text>`;
+    $("donut").innerHTML = s;
+    $("legend").innerHTML = CAUSES.map(([l, n, col], i) => `<button type="button" class="li${i === causeSel ? " sel" : ""}" data-c="${i}"><span class="sw" style="background:${col}"></span><span>${l}</span><span class="num">${n}</span></button>`).join("");
+    $("cause-note").innerHTML = `<strong>${lab}.</strong> ${CAUSE_NOTES[causeSel]}`;
+  }
+  $("legend").addEventListener("click", e => { const b = e.target.closest("[data-c]"); if (b) { causeSel = +b.dataset.c; renderDonut(); } });
+  $("flow-share").textContent = Math.round(243 / total * 100) + "%";
+  renderDonut();
+
+  // ---------- Journey simulator ----------
+  const STATIONS = ["Data check", "Order", "Ship", "Customs", "Dock", "Factory line"];
+  const MISTAKES = {
+    customs: { at: 3, delay: 3, cost: 12000, text: "Stuck at customs for 3 days. The shipment had no customs code." },
+    unit: { at: 4, delay: 1, cost: 2500, text: "Truck recounted at the dock. The supplier shipped boxes; our system expected pieces." },
+    version: { at: 5, delay: 5, cost: 100000, text: "The old part version reached the line and doesn't fit. The line stops for 2 hours." },
+    none: { at: -1, delay: 0, cost: 0, text: "Arrived on time. Nothing to fix." },
+  };
+  let jm = "customs", jcheck = false, jbusy = false;
+  const tally = { runs: 0, caught: 0, lost: 0 };
+  function drawTrack(state) {
+    $("j-track").innerHTML = STATIONS.map((n, i) => {
+      let cls = state[i] || "";
+      if (i === 0 && !jcheck) cls = "off";
+      return `<div class="station ${cls}"><span class="dot">${cls === "stop" ? "✕" : cls === "pass" || cls === "caught" ? "✓" : i === 0 ? "◆" : i}</span><span>${n}</span></div>`;
+    }).join("");
+  }
+  function setResult(kind, text, delay, cost) {
+    const r = $("j-result");
+    r.className = "j-result" + (kind ? " " + kind : "");
+    r.innerHTML = kind ? `<span>${text}</span><div><div class="big">${delay} ${delay === 1 ? "day" : "days"}</div><div class="cap">delay</div></div><div><div class="big">${cost ? "$" + cost.toLocaleString("en-US") : "$0"}</div><div class="cap">extra cost</div></div>`
+      : `<span class="muted">${text}</span>`;
+  }
+  function renderTally() {
+    $("j-tally").innerHTML = tally.runs ? `Runs: <strong>${tally.runs}</strong> · Caught early by the check: <strong>${tally.caught}</strong> · Money lost so far: <strong>$${tally.lost.toLocaleString("en-US")}</strong>` : "Try each mistake with the check off, then turn it on and send again.";
+  }
+  function resetJourney() { drawTrack({}); setResult("", "Pick a mistake and press Send."); }
+  function runJourney() {
+    if (jbusy) return; jbusy = true; $("j-go").disabled = true;
+    const m = MISTAKES[jm];
+    const caught = jcheck && jm !== "none";
+    const stopAt = caught ? 0 : m.at;
+    const state = {};
+    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let i = jcheck ? 0 : 1;
+    setResult("", "Moving…");
+    (function step() {
+      if (i > 0 || jcheck) state[i] = "here";
+      drawTrack(state);
+      setTimeout(() => {
+        if (i === stopAt) {
+          state[i] = caught ? "caught" : "stop"; drawTrack(state);
+          tally.runs++;
+          if (caught) { tally.caught++; tally.lost += 200; setResult("good", "Caught before ordering. The planner fixes the data in a few hours. No truck, ship, or line is affected.", 0, 200); }
+          else { tally.lost += m.cost; setResult("bad", m.text, m.delay, m.cost); }
+          renderTally(); jbusy = false; $("j-go").disabled = false; return;
+        }
+        state[i] = "pass";
+        if (i === STATIONS.length - 1) {
+          drawTrack(state); tally.runs++; setResult("good", m.text, 0, 0); renderTally(); jbusy = false; $("j-go").disabled = false; return;
+        }
+        i++; step();
+      }, reduce ? 0 : 420);
+    })();
+  }
+  $("j-mistake").addEventListener("click", e => { const b = e.target.closest("[data-m]"); if (!b || jbusy) return; jm = b.dataset.m; $("j-mistake").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); resetJourney(); });
+  $("j-check").addEventListener("click", () => { if (jbusy) return; jcheck = !jcheck; $("j-check").setAttribute("aria-pressed", String(jcheck)); $("j-check").querySelector(".sw-txt").textContent = jcheck ? "On" : "Off"; resetJourney(); });
+  $("j-go").addEventListener("click", runJourney);
+  resetJourney(); renderTally();
+
+  const FIELDS = [["Missing customs code", 71], ["Box vs. piece mix-up", 64], ["Wrong weight or size", 52], ["Missing shipping terms", 31], ["Old part version", 25]];
+  $("field-bars").innerHTML = FIELDS.map(([l, n], i) => `<div class="bar-row"><span>${l}</span><div class="bar-track"><div class="bar-fill${i < 2 ? " hl" : ""}" style="width:${n / 71 * 100}%"></div></div><span class="num" style="text-align:right">${n}</span></div>`).join("");
+
+  let lastCost = 0;
+  function renderCost() {
+    const ex = +$("c-ex").value, hr = +$("c-hr").value, hold = +$("c-hold").value, ld = +$("c-ld").value;
+    $("cv-ex").textContent = ex; $("cv-hr").textContent = hr + " h"; $("cv-hold").textContent = hold; $("cv-ld").textContent = ld + " h";
+    const parts = [["Rework labor", ex * 12 * hr * 65, "var(--g1)"], ["Customs holds", hold * 12 * 12000, "var(--ink)"], ["Line stoppages", ld * 50000, "var(--red)"]];
+    const sum = parts.reduce((a, p) => a + p[1], 0) || 1;
+    lastCost = sum;
+    $("cost-total").textContent = money(sum) + " / yr";
+    if (typeof renderWhatIf === "function" && $("w-adopt")) renderWhatIf();
+    $("cost-bar").innerHTML = parts.map(([, v, c]) => `<div style="width:${v / sum * 100}%; background:${c}"></div>`).join("");
+    $("cost-legend").innerHTML = parts.map(([l, v, c]) => `<div class="li"><span class="sw" style="background:${c}"></span><span>${l}</span><span class="num">${money(v)}</span></div>`).join("");
+  }
+  ["c-ex", "c-hr", "c-hold", "c-ld"].forEach(id => $(id).addEventListener("input", renderCost));
+
+  // ---------- 02 Prioritize ----------
+  const FEATURES = [
+    { id: "score", short: "Part data check", r: 1200, i: 3, c: 0.8, e: 4, who: "Planner",
+      story: "See if a part's data is complete before ordering.",
+      ac: ["Info missing → order paused, shows what's missing", "All info complete → order goes out on time", "Urgent parts can skip, reason logged"], metric: "Problem deliveries" },
+    { id: "trade", short: "Customs data check", r: 400, i: 3, c: 0.9, e: 2, who: "Customs team",
+      story: "Stop a shipment from booking if customs data is missing.",
+      ac: ["No customs code → shipment can't book", "Once fixed → unblocked within 15 min", "Every customs hold is recorded"], metric: "Customs holds" },
+    { id: "dash", short: "Problem tracker", r: 600, i: 1, c: 0.9, e: 3, who: "Product team",
+      story: "Record the cause of every delivery problem.",
+      ac: ["Every problem gets one cause", "Updates daily, filter by site or supplier", "Numbers match the source system"], metric: "Problems with a known cause" },
+    { id: "uom", short: "Unit checker at dock", r: 300, i: 2, c: 0.8, e: 3, who: "Warehouse",
+      story: "Warn the dock when the supplier's units don't match ours.",
+      ac: ["Mismatch → warning before receiving", "Known conversion → fixed automatically", "Mismatch creates a fix request"], metric: "Truck recounts" },
+    { id: "pim", short: "Auto-fill missing data", r: 900, i: 2, c: 0.7, e: 6, who: "Data team",
+      story: "Fill gaps automatically from the product database.",
+      ac: ["Shows where the data came from", "A person approves before saving", "Time to fix is tracked"], metric: "Days to fix missing data" },
+    { id: "ml", short: "AI error spotting", r: 1200, i: 1, c: 0.4, e: 8, who: "Data team",
+      story: "Spot weights or sizes that look wrong.",
+      ac: ["Fewer than 5 false alarms in 100", "Explains every alert"], metric: "Shipping re-quotes" },
+  ];
+  const value = f => f.r * f.i * f.c;
+  const rice = f => value(f) / f.e;
+
+  function plan() {
+    const cap = +$("cap").value;
+    const ranked = FEATURES.slice().sort((a, b) => rice(b) - rice(a));
+    let used = 0, nextUsed = 0;
+    ranked.forEach(f => { if (used + f.e <= cap) { f.lane = "now"; used += f.e; } else f.lane = null; });
+    ranked.filter(f => !f.lane).forEach(f => { if (rice(f) >= 100 && nextUsed + f.e <= cap) { f.lane = "next"; nextUsed += f.e; } else f.lane = "later"; });
+    return { ranked, used, cap };
+  }
+  const laneLabel = { now: "Now", next: "Next", later: "Later" };
+
+  function renderMatrix() {
+    const HIGH = 1000, QUICK = 4;
+    const q = (hi, quick) => FEATURES.filter(f => (value(f) >= HIGH) === hi && (f.e <= QUICK) === quick).sort((a, b) => rice(b) - rice(a));
+    const cards = list => list.map(f => `<div class="fcard ${f.lane}${f.id === selF ? " sel" : ""}" data-f="${f.id}" role="button" tabindex="0"><span>${esc(f.short)}</span><span class="num muted small">${f.e}w</span></div>`).join("") || `<span class="small muted">None</span>`;
+    $("matrix").innerHTML = `
+      <span></span><span class="axis-x">Quick to build (≤ ${QUICK} wks)</span><span class="axis-x">Takes longer</span>
+      <span class="axis-y">Big payoff</span>
+      <div class="quad win"><span class="qh">Quick wins</span><span class="qs">Do these first</span>${cards(q(true, true))}</div>
+      <div class="quad"><span class="qh">Big bets</span><span class="qs">Plan carefully</span>${cards(q(true, false))}</div>
+      <span class="axis-y">Smaller payoff</span>
+      <div class="quad"><span class="qh">Easy extras</span><span class="qs">Fit in if time allows</span>${cards(q(false, true))}</div>
+      <div class="quad"><span class="qh">Not now</span><span class="qs">Revisit later</span>${cards(q(false, false))}</div>`;
+  }
+
+  function renderRice() {
+    const { ranked, used, cap } = plan();
+    $("cap-v").textContent = cap + " weeks";
+    const labels = { r: "parts helped per quarter", i: "how much it helps", c: "how sure we are", e: "weeks to build" };
+    const inp = (f, k, step, min, max) => `<input class="cell" type="number" id="in-${f.id}-${k}" data-f="${f.id}" data-k="${k}" value="${f[k]}" step="${step}" min="${min}" max="${max}" aria-label="${labels[k]} for ${esc(f.short)}">`;
+    $("rice-body").innerHTML = ranked.map(f => `<tr>
+      <td style="min-width:150px">${esc(f.short)}</td><td class="r">${inp(f, "r", 50, 0, 5000)}</td><td class="r">${inp(f, "i", 0.5, 0.5, 3)}</td><td class="r">${inp(f, "c", 0.1, 0, 1)}</td><td class="r">${inp(f, "e", 1, 1, 20)}</td>
+      <td class="r num"><strong>${Math.round(rice(f))}</strong></td></tr>`).join("");
+    const maxS = Math.max(...ranked.map(rice));
+    const now = ranked.filter(f => f.lane === "now");
+    let html = "", cutDone = false;
+    ranked.forEach((f, i) => {
+      if (!cutDone && f.lane !== "now") { html += `<div class="cutline">Team time runs out here</div>`; cutDone = true; }
+      html += `<div class="rank-row ${f.lane}${f.id === selF ? " sel" : ""}" data-f="${f.id}" role="button" tabindex="0"><span class="pos">${i + 1}</span><div style="min-width:0"><div class="nm">${esc(f.short)}</div><div class="sb"><div style="width:${rice(f) / maxS * 100}%"></div></div></div><span class="pill ${f.lane}">${laneLabel[f.lane]}</span></div>`;
+    });
+    $("rank").innerHTML = html;
+    const minNow = Math.min(...now.map(rice));
+    const skipped = ranked.find(f => f.lane !== "now" && rice(f) > minNow);
+    $("rice-note").innerHTML = `<strong>${now.length} features fit in ${used} of ${cap} weeks.</strong> ` +
+      (skipped ? `${esc(skipped.short)} scores well but needs ${skipped.e} weeks, so a smaller item goes first.` : `Everything above the line fits.`);
+    $("flow-mvp").textContent = now.length;
+    renderMatrix(); renderFDetail(); renderPrd(); renderRoadmap();
+  }
+  let selF = "score";
+  function renderFDetail() {
+    const f = FEATURES.find(x => x.id === selF); if (!f) { $("fdetail").innerHTML = ""; return; }
+    const where = value(f) >= 1000 ? (f.e <= 4 ? "Quick win" : "Big bet") : (f.e <= 4 ? "Easy extra" : "Not now");
+    $("fdetail").innerHTML = `<span class="t">${esc(f.short)} · ${where}</span><span class="small">${esc(f.story)} <span class="muted">For: ${f.who}.</span></span>
+      <div class="math">${f.r.toLocaleString("en-US")} parts × ${f.i} impact × ${Math.round(f.c * 100)}% sure ÷ ${f.e} weeks = <strong>${Math.round(rice(f))}</strong></div>
+      <span class="small">Decision: <span class="pill ${f.lane}">${laneLabel[f.lane]}</span></span>`;
+  }
+  function pickF(e) { const el = e.target.closest("[data-f]"); if (!el || el.tagName === "INPUT") return; selF = el.dataset.f; renderRice(); }
+  ["matrix", "rank"].forEach(id => { $(id).addEventListener("click", pickF); $(id).addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pickF(e); } }); });
+  $("cap").addEventListener("input", renderRice);
+  $("rice-body").addEventListener("change", e => {
+    const t = e.target.closest("input[data-f]"); if (!t) return;
+    const f = FEATURES.find(x => x.id === t.dataset.f), v = parseFloat(t.value);
+    if (!isNaN(v)) f[t.dataset.k] = Math.min(+t.max, Math.max(+t.min, v));
+    renderRice();
+  });
+
+  // ---------- 03 Requirements ----------
+  function renderPrd() {
+    const now = FEATURES.filter(f => f.lane === "now").sort((a, b) => rice(b) - rice(a));
+    $("prd").innerHTML = now.map((f, i) => `<div class="req">
+      <div style="display:flex; justify-content:space-between; gap:8px; align-items:center"><span class="id">R1.${i + 1}</span><span class="chip">${f.who}</span></div>
+      <span class="t">${esc(f.short)}</span>
+      <span class="small">${esc(f.story)}</span>
+      <div class="ac">${f.ac.map(a => `<div>${esc(a)}</div>`).join("")}</div>
+      <div class="moves">Improves <strong>${esc(f.metric)}</strong></div>
+    </div>`).join("") || `<p class="muted">Raise capacity on the Prioritize tab.</p>`;
+    $("oos").innerHTML = FEATURES.filter(f => f.lane !== "now").map(f => `<span class="chip">${esc(f.short)}</span>`).join("") + `<span class="chip">Changing how SAP stores data</span>`;
+  }
+
+  // ---------- 04 Roadmap ----------
+  function renderRoadmap() {
+    ["now", "next", "later"].forEach(l => {
+      const items = FEATURES.filter(f => f.lane === l).sort((a, b) => rice(b) - rice(a));
+      $("lane-" + l).innerHTML = items.map(f => `<div class="card"><span>${esc(f.short)}</span><span class="num muted">${f.e}w</span></div>`).join("") || `<span class="small muted">Empty at this capacity</span>`;
+    });
+    const nowWeeks = FEATURES.filter(f => f.lane === "now").reduce((a, f) => a + f.e, 0);
+    const build = Math.max(3, Math.min(6, Math.ceil(nowWeeks / 3)));
+    const W = 14;
+    const steps = [
+      ["Discovery", 0, 2, "", "Interview planners, customs, and warehouse leads. Pull 12 weeks of delivery problems and tag their causes.", "Problem statement + cost estimate"],
+      ["Requirements approved", 2, 0, "gate", "Planning, customs, and warehouse leads sign off on what release 1 must do.", "Signed requirements"],
+      ["Build", 2, build, "red", "Engineers build the release 1 features. I join daily stand-ups, answer questions, and protect scope.", "Working features in a test system"],
+      ["User testing", 2 + build, 2, "", "Real planners and dock staff run test scenarios. We fix anything that blocks them.", "Test results + fixed issues"],
+      ["Go / no-go", 4 + build, 0, "gate", "Decide with stakeholders: are tests passed, people trained, and a backup plan ready?", "Launch decision"],
+      ["Pilot at 1 warehouse", 4 + build, 3, "red", "Turn it on at one warehouse. Watch the numbers daily and fix what we learn.", "Pilot results vs. starting numbers"],
+      ["Roll out everywhere", 7 + build, W - 7 - build, "", "Expand site by site with training and step-by-step guides.", "Live at all sites"],
+    ];
+    $("gantt").innerHTML = `<div class="g-axis"><span></span><div class="ticks">${[0, 2, 4, 6, 8, 10, 12, 14].map(w => `<span>${w}</span>`).join("")}</div></div>` +
+      steps.map(([n, s, d, kind], i) => `<div class="g-row${i === selG ? " sel" : ""}" data-g="${i}" role="button" tabindex="0"><span>${n}</span><div class="g-track"><div class="g-bar${kind ? " " + kind : ""}" style="left:calc(${s / W * 100}% ${kind === "gate" ? "- 7px" : ""}); width:${d / W * 100}%"></div></div></div>`).join("");
+    const [gn, , , , gd, go] = steps[selG];
+    $("gdetail").innerHTML = `<span class="t">${gn}</span><span class="small">${gd}</span><span class="small muted">Output: ${go}</span>`;
+  }
+  let selG = 2;
+  function pickG(e) { const el = e.target.closest("[data-g]"); if (!el) return; selG = +el.dataset.g; renderRoadmap(); }
+  $("gantt").addEventListener("click", pickG);
+  $("gantt").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pickG(e); } });
+
+  // ---------- 05 Measure ----------
+  const TILES = [
+    ["Driver", "Part data complete", 91, 99, "%", 100],
+    ["Driver", "Days to fix missing data", 3.2, 1.0, "d", 4],
+    ["Usage", "Planners using it weekly", 0, 85, "%", 100],
+    ["Safety check", "Extra wait added to orders", 0, 4, "h max", 8, true],
+  ];
+  $("tiles").innerHTML = TILES.map(([k, n, a, b, u, max, guard]) => `<div class="tile${guard ? " guard" : ""}"><span class="k">${k}</span><span class="name">${n}</span>
+    <div class="mini">
+      ${guard ? `<div class="mr"><span>limit</span><div class="mt"><div class="mf" style="width:${b / max * 100}%; background:var(--warn)"></div></div><span class="num">≤ ${b} h</span></div>`
+      : `<div class="mr"><span>today</span><div class="mt"><div class="mf" style="width:${a / max * 100}%; background:var(--g1)"></div></div><span class="num">${a}${u}</span></div>
+         <div class="mr"><span>target</span><div class="mt"><div class="mf" style="width:${b / max * 100}%; background:var(--red)"></div></div><span class="num">${b}${u}</span></div>`}
+    </div></div>`).join("");
+
+  function drawPilot(proj) {
+    const base = [9.8, 9.4, 9.7, 9.3, 9.6, 9.5];
+    const ease = [0.17, 0.38, 0.58, 0.74, 0.88, 1];
+    const vals = base.concat(ease.map(k => 9.5 - (9.5 - proj) * k));
+    const W = 500, H = 240, L = 30, R = 12, T = 14, B = 26, maxY = 12;
+    const x = i => L + i * (W - L - R) / (vals.length - 1);
+    const y = v => T + (1 - v / maxY) * (H - T - B);
+    let s = `<rect x="${x(5.5)}" y="${T}" width="${x(11) - x(5.5)}" height="${y(0) - T}" fill="var(--red-soft)"/>`;
+    [0, 4, 8, 12].forEach(v => { s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${L - 6}" y="${y(v) + 3}" text-anchor="end">${v}</text>`; });
+    vals.forEach((v, i) => { s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle">w${i + 1}</text>`; });
+    s += `<text x="${x(5.5) + 6}" y="${T + 13}" style="fill:var(--red); font-weight:600">PILOT</text>`;
+    s += `<line x1="${L}" x2="${W - R}" y1="${y(4)}" y2="${y(4)}" stroke="var(--ok)" stroke-dasharray="5 4" stroke-width="1.5"/><text x="${W - R}" y="${y(4) + 14}" text-anchor="end" style="fill:var(--ok)">target 4.0</text>`;
+    s += `<path d="${vals.map((v, i) => (i ? "L" : "M") + x(i) + " " + y(v)).join(" ")}" fill="none" stroke="var(--ink)" stroke-width="2.2"/>`;
+    vals.forEach((v, i) => { s += `<circle cx="${x(i)}" cy="${y(v)}" r="${i === vals.length - 1 ? 5 : 3}" fill="${i >= 6 ? "var(--red)" : "var(--ink)"}"/>`; });
+    s += `<text x="${x(11)}" y="${y(vals[11]) - 10}" text-anchor="middle" style="fill:var(--fg); font-weight:600">${vals[11].toFixed(1)}</text>`;
+    $("pilot").innerHTML = s;
+  }
+
+  function renderWhatIf() {
+    const a = +$("w-adopt").value, f = +$("w-fix").value;
+    $("wv-adopt").textContent = a + "%"; $("wv-fix").textContent = f + "%";
+    const effect = Math.min(1.25, 0.7 * a / 85 + 0.3 * f / 90);
+    const proj = Math.max(2, 9.5 - 5.5 * effect);
+    $("w-proj").textContent = proj.toFixed(1);
+    const st = $("w-status");
+    if (proj <= 4.05) { st.textContent = "On target"; st.style.background = "var(--ok)"; st.style.color = "#ffffff"; }
+    else { st.textContent = "Short by " + (proj - 4).toFixed(1); st.style.background = "var(--red)"; st.style.color = "#ffffff"; }
+    const saved = lastCost * (9.5 - proj) / 9.5;
+    $("w-save").innerHTML = `Saves about <strong>${money(saved)} a year</strong> at the cost estimate from tab 01.` + (a < 50 ? " Low usage is the biggest risk, so training matters as much as the software." : "");
+    drawPilot(proj);
+  }
+  ["w-adopt", "w-fix"].forEach(id => $(id).addEventListener("input", renderWhatIf));
+
+  // ---------- Try the check ----------
+  let tOverride = false;
+  function renderTry() {
+    const hs = $("t-hs").value.trim(), unit = $("t-unit").value, conv = $("t-conv").checked, wt = parseFloat($("t-wt").value), inco = $("t-inco").value, rev = $("t-rev").value;
+    const rules = [
+      [/^\d{4}\.\d{2}$/.test(hs), "Customs code is filled in", "Format like 8708.99. Without it, customs holds the shipment."],
+      [unit === "each" || conv, "Units match our system", "Supplier ships boxes; we count pieces. Add the conversion."],
+      [wt > 0, "Weight is set", "Needed to plan the truck and quote shipping."],
+      [inco !== "", "Shipping terms are set", "Says who pays for and owns the freight."],
+      [rev === "C", "Part version is current", "Rev B is old and won't fit on the line."],
+    ];
+    const ok = rules.filter(r => r[0]).length, pct = ok / rules.length;
+    const all = ok === rules.length;
+    const r = 26, C = 2 * Math.PI * r;
+    const kind = all ? "ok" : tOverride ? "urgent" : "stop";
+    const title = all ? "Ready to order" : tOverride ? "Sent as urgent" : "Order paused";
+    const sub = all ? "All checks pass. No delay added." : tOverride ? "Override logged with a reason. Data team gets a fix request." : (rules.length - ok) + " thing" + (rules.length - ok > 1 ? "s" : "") + " to fix before this part can be ordered.";
+    $("t-verdict").className = "verdict " + kind;
+    $("t-verdict").innerHTML = `<svg viewBox="0 0 64 64" width="64" height="64" aria-hidden="true"><circle cx="32" cy="32" r="${r}" fill="none" stroke="var(--panel)" stroke-width="7"/><circle cx="32" cy="32" r="${r}" fill="none" stroke="${all ? "var(--ok)" : "var(--red)"}" stroke-width="7" stroke-dasharray="${pct * C} ${C}" transform="rotate(-90 32 32)" stroke-linecap="round"/><text x="32" y="36" text-anchor="middle" style="fill:var(--fg); font-family:Montserrat, sans-serif; font-weight:700; font-size:13px">${Math.round(pct * 100)}%</text></svg><div><div class="vt">${title}</div><div class="small">${sub}</div></div>`;
+    $("t-rules").innerHTML = rules.map(([pass, name, why]) => `<div class="rule ${pass ? "ok" : "bad"}"><span class="mk">${pass ? "✓" : "✕"}</span><div><div>${name}</div>${pass ? "" : `<div class="why">${why}</div>`}</div></div>`).join("");
+    $("t-override").hidden = all || tOverride;
+  }
+  ["t-hs", "t-unit", "t-conv", "t-wt", "t-inco", "t-rev"].forEach(id => { $(id).addEventListener("input", () => { tOverride = false; renderTry(); }); $(id).addEventListener("change", () => { tOverride = false; renderTry(); }); });
+  $("t-override").addEventListener("click", () => { tOverride = true; renderTry(); });
+  $("t-good").addEventListener("click", () => { $("t-hs").value = "8708.99"; $("t-unit").value = "each"; $("t-conv").checked = false; $("t-wt").value = "21.5"; $("t-inco").value = "DAP"; $("t-rev").value = "C"; tOverride = false; renderTry(); });
+  $("t-bad").addEventListener("click", () => { $("t-hs").value = ""; $("t-unit").value = "box"; $("t-conv").checked = false; $("t-wt").value = "0"; $("t-inco").value = ""; $("t-rev").value = "B"; tOverride = false; renderTry(); });
+  $("try-form").addEventListener("submit", e => e.preventDefault());
+
+  const CHECKS = ["Teams approved the requirements", "User testing passed", "Step-by-step guides written", "Users trained at pilot warehouse", "Support plan ready", "Backup plan: switch to warnings only", "Starting numbers recorded"];
+  const done = new Set([0, 1, 2, 6]);
+  function renderChecklist() {
+    $("checklist").innerHTML = CHECKS.map((t, i) => `<label class="check${done.has(i) ? " done" : ""}" for="chk-${i}"><input type="checkbox" id="chk-${i}" data-i="${i}" ${done.has(i) ? "checked" : ""}><span>${t}</span></label>`).join("");
+    const p = done.size / CHECKS.length, r = 26, C = 2 * Math.PI * r;
+    $("ring").innerHTML = `<circle cx="32" cy="32" r="${r}" fill="none" stroke="var(--sunken)" stroke-width="7"/>
+      <circle cx="32" cy="32" r="${r}" fill="none" stroke="${p === 1 ? "var(--ok)" : "var(--red)"}" stroke-width="7" stroke-dasharray="${p * C} ${C}" transform="rotate(-90 32 32)" stroke-linecap="round"/>
+      <text x="32" y="36" text-anchor="middle" style="fill:var(--fg); font-family:Montserrat, sans-serif; font-weight:700; font-size:13px">${Math.round(p * 100)}%</text>`;
+    $("launch-status").textContent = p === 1 ? "Ready for go / no-go" : `${done.size} of ${CHECKS.length} done`;
+  }
+  $("checklist").addEventListener("change", e => { const c = e.target.closest("input[data-i]"); if (!c) return; c.checked ? done.add(+c.dataset.i) : done.delete(+c.dataset.i); renderChecklist(); });
+
+  // ---------- Tabs ----------
+  const PANELS = ["problem", "prioritize", "define", "roadmap", "measure"];
+  function showTab(name) {
+    document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.panel === name)));
+    PANELS.forEach(n => { $("panel-" + n).hidden = n !== name; });
+    try { localStorage.setItem("pdr-tab", name); } catch (e) {}
+  }
+  document.querySelectorAll("nav.tabs button").forEach(b => b.addEventListener("click", () => showTab(b.dataset.panel)));
+
+  renderCost(); renderRice(); renderChecklist(); renderWhatIf(); renderTry();
+  let start = "problem";
+  try { start = localStorage.getItem("pdr-tab") || start; } catch (e) {}
+  const h = (location.hash || "").slice(1); if (PANELS.includes(h)) start = h;
+  showTab(PANELS.includes(start) ? start : "problem");
+})();
+</script>
+
+</body>
+</html>
